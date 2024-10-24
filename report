@@ -1,0 +1,51 @@
+Description of the Project
+The goal of this project is to create a file processing system that can determine how frequently a certain word appears in a number of huge text files. Both multiprocessing and multithreading are used by the system to improve efficiency and performance. Every file is handled by a different process, and each process has several threads that read different parts of the file simultaneously.
+
+Overview of Multiprocessing and Multithreading
+Multiprocessing: This method enables each file to operate independently by generating a distinct process for it. Each process can run on a separate CPU core, which is advantageous for CPU-bound tasks.
+Multithreading: To read and process parts of the file, several threads are generated within each process. This method can result in greater resource use, particularly for I/O-bound tasks, and is lighter than establishing distinct processes.
+Advantages and Disadvantages
+Advantages
+Multiprocessing:
+Parallel execution results in better CPU utilization.
+Process isolation lowers the possibility of memory corruption.
+Multithreading:
+less memory burden than when multiprocessing is used.
+quicker thread-to-thread context changes.
+Disadvantages
+Multiprocessing:
+Higher memory consumption due to separate process memory spaces.
+Overhead of process creation and management.
+Multithreading:
+Complexity in managing shared data and synchronization.
+Potential for race conditions if not managed properly.
+
+
+
+Structure of the Code
+For readability and maintainability, the code is divided into several modules. The primary purposes are:
+count_words: A thread function that keeps track of how many times a word appears in a file.
+primary: controls word counting and initializes threads and processes.
+
+Implementation Description
+Process Management
+For every file that has to be processed, the system creates a child process using fork().
+The word count in each child process is managed by the corresponding file.
+
+IPC Mechanism
+Although threading within each process is the main emphasis of this design, IPC techniques like pipes or message queues for result sharing between processes may be included in later versions.
+Threading
+To efficiently handle reading and counting, each process uses POSIX threads, often known as pthreads, to establish many threads. 
+Error Handling
+Issues with thread management, process formation errors, and file access are all handled with appropriate error handling.
+
+Discussion
+Challenges
+maintaining data integrity while controlling thread synchronization.
+Finding a balance between the expense of multiprocessing and the intricacy of multithreading
+Observations
+While multithreading was more effective for jobs that were I/O-bound, multiprocessing performed better for operations that required a lot of CPU power.
+For best performance, file partitioning and thread workload must be carefully planned.
+Limitations and Improvements
+IPC for combining results from several processes is absent from the existing implementation. Mechanisms for improved process communication may be included in future enhancements.
+For simpler debugging and performance monitoring, improved error handling and logging can be included. 
