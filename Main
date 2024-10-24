@@ -12,6 +12,8 @@ typedef struct {
     char* filename;
     char* word;
     int word_count;
+    long start;
+    long end;
 } ThreadData;
 
 void* count_words(void* arg) {
@@ -25,12 +27,16 @@ void* count_words(void* arg) {
         pthread_exit(NULL);
     }
 
+    fseek(file, data->start, SEEK_SET);
     char buffer[BUFFER_SIZE];
     int count = 0;
-    while (fscanf(file, "%1023s", buffer) == 1) {
+    long current_pos = data->start;
+
+    while (current_pos < data->end && fscanf(file, "%1023s", buffer) == 1) {
         if (strcmp(buffer, data->word) == 0) {
             count++;
         }
+        current_pos = ftell(file);
     }
     fclose(file);
     data->word_count = count;
@@ -58,9 +64,25 @@ int main(int argc, char* argv[]) {
             ThreadData thread_data[NUM_THREADS];
             pthread_t threads[NUM_THREADS];
 
+            // Open the file to determine its size
+            FILE* file = fopen(argv[i + 2], "r");
+            if (!file) {
+                perror("Failed to open file");
+                exit(1);
+            }
+
+            fseek(file, 0, SEEK_END);
+            long file_size = ftell(file);
+            fclose(file);
+
+            // Divide the file size into parts for each thread
+            long chunk_size = file_size / NUM_THREADS;
+
             for (int j = 0; j < NUM_THREADS; j++) {
                 thread_data[j].filename = argv[i + 2];
                 thread_data[j].word = word;
+                thread_data[j].start = j * chunk_size;
+                thread_data[j].end = (j == NUM_THREADS - 1) ? file_size : (j + 1) * chunk_size;
                 thread_data[j].word_count = 0;
                 pthread_create(&threads[j], NULL, count_words, (void*)&thread_data[j]);
             }
@@ -79,6 +101,9 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < num_files; i++) {
         wait(NULL); // Parent waits for all child processes to finish
     }
+
+    return 0;
+}
 
     return 0;
 }
